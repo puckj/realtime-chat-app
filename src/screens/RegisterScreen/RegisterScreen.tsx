@@ -4,11 +4,15 @@ import {
   KeyboardAvoidingView,
   TextInput,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { RootStackNavigationProp } from "../../navigation/types";
+import axios from "axios";
+import { API_URL } from "@env";
+import { Encryption } from "../../helpers/encryption";
 
 const RegisterScreen = () => {
   const [email, setEmail] = useState("");
@@ -16,6 +20,38 @@ const RegisterScreen = () => {
   const [password, setPassword] = useState("");
   const [image, setImage] = useState("");
   const navigation = useNavigation<RootStackNavigationProp>();
+
+  const handleRegister = async () => {
+    const user = {
+      name,
+      email,
+      password: await Encryption(password),
+      image,
+    };
+
+    //send a POST request to the backend API (register)
+    axios
+      .post(API_URL + "/register", user)
+      .then((res) => {
+        // console.log(res);
+        Alert.alert(
+          "Registration Successful",
+          "You have been registered Successfully"
+        );
+        setName("");
+        setEmail("");
+        setPassword("");
+        setImage("");
+      })
+      .catch((err) => {
+        console.error(err);
+        Alert.alert(
+          "Registration Error",
+          "An error occurred while registering"
+        );
+      });
+  };
+
   return (
     <SafeAreaView
       style={{
@@ -108,6 +144,7 @@ const RegisterScreen = () => {
           </View>
         </View>
         <TouchableOpacity
+          onPress={handleRegister}
           style={{
             width: 200,
             backgroundColor: "#4A55A2",

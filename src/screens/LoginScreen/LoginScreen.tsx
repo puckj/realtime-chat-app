@@ -4,17 +4,34 @@ import {
   KeyboardAvoidingView,
   TextInput,
   TouchableOpacity,
-  Platform,
 } from "react-native";
 import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { RootStackNavigationProp } from "../../navigation/types";
+import { Encryption } from "../../helpers/encryption";
+import axios from "axios";
+import { API_URL } from "@env";
 
 const LoginScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigation = useNavigation<RootStackNavigationProp>();
+  const handleLogin = async () => {
+    const user = {
+      email,
+      password: await Encryption(password),
+    };
+    axios
+      .post(API_URL + "/login", user)
+      .then((res) => {
+        const token = res.data.token;
+        console.log(token);
+      })
+      .catch((err) => {
+        console.error(err.response);
+      });
+  };
   return (
     <SafeAreaView
       style={{
@@ -75,6 +92,7 @@ const LoginScreen = () => {
           </View>
         </View>
         <TouchableOpacity
+          onPress={handleLogin}
           style={{
             width: 200,
             backgroundColor: "#4A55A2",
