@@ -4,6 +4,7 @@ import {
   KeyboardAvoidingView,
   TextInput,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -12,11 +13,17 @@ import { RootStackNavigationProp } from "../../navigation/types";
 import { Encryption } from "../../helpers/encryption";
 import axios from "axios";
 import { API_URL } from "@env";
+import jwt_decode from "jwt-decode";
+import { useAppDispatch } from "../../store/hooks";
+import { setUser } from "../../store/features/user/userSlice";
 
 const LoginScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigation = useNavigation<RootStackNavigationProp>();
+
+  const dispatch = useAppDispatch();
+
   const handleLogin = async () => {
     const user = {
       email,
@@ -27,9 +34,13 @@ const LoginScreen = () => {
       .then((res) => {
         const token = res.data.token;
         console.log(token);
+        
+        //ทำต่อตรงนี้ ใช้ redux toolkit + AsyncStorage
+        dispatch(setUser({authToken:token}))
       })
       .catch((err) => {
         console.error(err.response);
+        Alert.alert("Login Error", "Invalid email or password");
       });
   };
   return (
