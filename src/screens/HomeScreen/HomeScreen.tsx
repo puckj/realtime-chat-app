@@ -13,7 +13,46 @@ const HomeScreen = () => {
   const dispatch = useAppDispatch();
   const navigation = useNavigation<RootStackNavigationProp>();
   const userId = useAppSelector(selectUserId);
+
   const [users, setUsers] = useState([]);
+  const [friendRequestsList, setFriendRequestList] = useState([]);
+  const [friendList, setFriendList] = useState([]);
+
+  useEffect(() => {
+    fetchUsers();
+    fetchFriendRequestList();
+    fetchFriendsList();
+  }, []);
+
+  const fetchUsers = async () => {
+    axios
+      .get(`${API_URL}/users/${userId}`)
+      .then((res) => {
+        // console.log(res.data);
+        setUsers(res.data);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  };
+  const fetchFriendRequestList = async () => {
+    axios
+      .get(`${API_URL}/friend-requests/sent/${userId}`)
+      .then((res) => {
+        // console.log(res.data, "/friend-requests/sent/");
+        setFriendRequestList(res.data);
+      })
+      .catch((err) => console.error(err));
+  };
+  const fetchFriendsList = async () => {
+    axios
+      .get(`${API_URL}/friends/${userId}`)
+      .then((res) => {
+        // console.log(res.data, "/friends/");
+        setFriendList(res.data);
+      })
+      .catch((err) => console.error(err));
+  };
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -30,27 +69,21 @@ const HomeScreen = () => {
       ),
     });
   }, []);
-  useEffect(() => {
-    console.log(userId, "<< [userId]");
-    const fetchUsers = async () => {
-      axios
-        .get(`${API_URL}/users/${userId}`)
-        .then((res) => {
-          console.log(res.data);
-          setUsers(res.data);
-        })
-        .catch((err) => {
-          console.error(err);
-        });
-    };
-    fetchUsers();
-  }, []);
 
   return (
     <View>
       <View style={{ padding: 10 }}>
         {users.length > 0 &&
-          users.map((item, index) => <UserItem key={index} item={item} />)}
+          users.map((item, index) => {
+            return (
+              <UserItem
+                key={index}
+                item={item}
+                friendRequestsList={friendRequestsList}
+                friendList={friendList}
+              />
+            );
+          })}
       </View>
       <TouchableOpacity
         onPress={() => dispatch(clearUser())}

@@ -109,3 +109,80 @@ app.get("/users/:userId", (req: any, res: any) => {
       res.status(500).json({ message: "Error retrieving users" });
     });
 });
+
+app.post("/friend-request", async (req: any, res: any) => {
+  try {
+    const { currentUserId, selectedUserId } = req.body;
+
+    //update the recepient's friendRequests array
+    await User.findByIdAndUpdate(selectedUserId, {
+      $push: { friendRequests: currentUserId },
+    });
+
+    //update the sender's sentFriendRequests array
+    await User.findByIdAndUpdate(currentUserId, {
+      $push: { sentFriendRequests: selectedUserId },
+    });
+
+    res.sendStatus(200);
+  } catch (error) {
+    res.sendStatus(500);
+  }
+});
+
+// //endpoint to show all the friend-requests of a particular user
+// app.get("/friend-request/:userId", async (req: any, res: any) => {
+//   try {
+//     const { userId } = req.params;
+
+//     //fetch the user document based on the userId
+//     const user = await User.findById(userId)
+//       .populate("friendRequests", "name email image")
+//       .lean();
+
+//     const friendRequests = user.friendRequests;
+
+//     res.status(200).json(friendRequests);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Internal Server Error" });
+//   }
+// });
+
+//endpoint สำหรับ get รายชื่อ friendRequests ของ user นั้นขอเพิ่มเพื่อนไป (ยังไม่ได้ตอบรับเป็นเพื่อน)
+app.get("/friend-requests/sent/:userId", async (req: any, res: any) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findById(userId)
+      .populate("sentFriendRequests", "name email image")
+      .lean();
+
+    const sentFriendRequests = user.sentFriendRequests;
+
+    res.json(sentFriendRequests);
+  } catch (error) {
+    console.log("error", error);
+    res.status(500).json({ error: "Internal Server" });
+  }
+});
+
+//endpoint สำหรับ get รายชื่อเพื่อนทั้งหมดของ user นั้น
+app.get("/friends/:userId", (req: any, res: any) => {
+  try {
+    const { userId } = req.params;
+
+    User.findById(userId)
+      .populate("friends")
+      .then((user: any) => {
+        if (!user) {
+          return res.status(404).json({ message: "User not found" });
+        }
+        const friendIds = user.friends.map((friend: any) => friend._id);
+
+        res.status(200).json(friendIds);
+      });
+  } catch (error) {
+    console.log("error", error);
+    res.status(500).json({ message: "internal server error" });
+  }
+});
