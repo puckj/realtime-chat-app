@@ -36,11 +36,8 @@ export const selectIsAuthenticated = (state: RootState) => {
   return state.user.isAuthenticated;
 };
 
-export const selectUser = (state: RootState) => {
-  return {
-    authToken: state.user.authToken,
-    userId: state.user.userId,
-  };
+export const selectUserId = (state: RootState) => {
+  return state.user.userId;
 };
 
 export default userSlice.reducer;

@@ -13,13 +13,12 @@ import { RootStackNavigationProp } from "../../navigation/types";
 import { Encryption } from "../../helpers/encryption";
 import axios from "axios";
 import { API_URL } from "@env";
-import jwt_decode from "jwt-decode";
 import { useAppDispatch } from "../../store/hooks";
 import { setUser } from "../../store/features/user/userSlice";
 
 const LoginScreen = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("admin@gmail.com");
+  const [password, setPassword] = useState("5555");
   const navigation = useNavigation<RootStackNavigationProp>();
 
   const dispatch = useAppDispatch();
