@@ -1,4 +1,10 @@
-import { View, Text, TouchableOpacity, Platform } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Platform,
+  ScrollView,
+} from "react-native";
 import React, { useEffect, useLayoutEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { clearUser, selectUserId } from "../../store/features/user/userSlice";
@@ -64,8 +70,12 @@ const HomeScreen = () => {
       ),
       headerRight: () => (
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-          <Ionicons name="chatbox-ellipses-outline" size={24} color="black" />
-          <TouchableOpacity onPress={()=> navigation.navigate('FriendsRequestScreen')}>
+          <TouchableOpacity onPress={() => navigation.navigate("ChatsScreen")}>
+            <Ionicons name="chatbox-ellipses-outline" size={24} color="black" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => navigation.navigate("FriendsRequestScreen")}
+          >
             <Ionicons name="people-outline" size={24} color="black" />
           </TouchableOpacity>
         </View>
@@ -74,8 +84,8 @@ const HomeScreen = () => {
   }, []);
 
   return (
-    <View>
-      <View style={{ padding: 10 }}>
+    <View style={{ flex: 1 }}>
+      <ScrollView style={{ padding: 10, flex: 1 }}>
         {users.length > 0 &&
           users.map((item, index) => {
             return (
@@ -87,7 +97,7 @@ const HomeScreen = () => {
               />
             );
           })}
-      </View>
+      </ScrollView>
       <TouchableOpacity
         onPress={() => dispatch(clearUser())}
         style={{

@@ -13,6 +13,8 @@ import { useEffect, useState } from "react";
 import { ActivityIndicator } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import FriendsRequestScreen from "../screens/FriendsRequestScreen/FriendsRequestScreen";
+import ChatsScreen from "../screens/ChatsScreen/ChatsScreen";
+import ChatMessagesScreen from "../screens/ChatMessagesScreen/ChatMessagesScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -45,6 +47,15 @@ const RootStackNavigator = () => {
               name="FriendsRequestScreen"
               component={FriendsRequestScreen}
               options={{ headerTitle: "Friends Request" }}
+            />
+            <Stack.Screen
+              name="ChatsScreen"
+              component={ChatsScreen}
+              options={{ headerTitle: "Chats" }}
+            />
+            <Stack.Screen
+              name="ChatMessagesScreen"
+              component={ChatMessagesScreen}
             />
           </Stack.Group>
         ) : (

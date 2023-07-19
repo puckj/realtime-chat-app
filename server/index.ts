@@ -215,3 +215,19 @@ app.post("/friend-request/accept", async (req: any, res: any) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
+
+//endpoint เข้าถึงรายชื่อเพื่อนทั้งหมด ที่ตอบรับคำขอเป็นเพื่อนของ user นั้น
+app.get("/accepted-friends/:userId", async (req: any, res: any) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findById(userId).populate(
+      "friends",
+      "name email image"
+    );
+    const acceptedFriends = user.friends;
+    res.json(acceptedFriends);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});

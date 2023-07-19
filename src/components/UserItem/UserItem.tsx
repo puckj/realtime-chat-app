@@ -53,22 +53,24 @@ const UserItem = ({ item, friendRequestsList, friendList }) => {
         <Text style={{ fontWeight: "bold" }}>{item.name}</Text>
         <Text style={{ marginTop: 4, color: "gray" }}>{item.email}</Text>
       </View>
-      {/* <TouchableOpacity
-        // onPress={addFriendHandle}
-        disabled
-        style={{
-          backgroundColor: "#82CD47",
-          padding: 10,
-          borderRadius: 6,
-          width: 105,
-        }}
-      >
-        <Text style={{ textAlign: "center", color: "white", fontSize: 13 }}>
-          Add Friend
-        </Text>
-      </TouchableOpacity> */}
-      {isRequestSent ||
-      friendRequestsList.some((friend: any) => friend._id === item._id) ? (
+
+      {friendList.includes(item._id) ? (
+        <TouchableOpacity
+          // onPress={addFriendHandle}
+          disabled
+          style={{
+            backgroundColor: "#82CD47",
+            padding: 10,
+            borderRadius: 6,
+            width: 105,
+          }}
+        >
+          <Text style={{ textAlign: "center", color: "white", fontSize: 13 }}>
+            Friend
+          </Text>
+        </TouchableOpacity>
+      ) : isRequestSent ||
+        friendRequestsList.some((friend: any) => friend._id === item._id) ? (
         <TouchableOpacity
           disabled
           style={{
