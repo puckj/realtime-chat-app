@@ -12,6 +12,7 @@ import {
 import { useEffect, useState } from "react";
 import { ActivityIndicator } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import FriendsRequestScreen from "../screens/FriendsRequestScreen/FriendsRequestScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -36,19 +37,32 @@ const RootStackNavigator = () => {
     <ActivityIndicator size="large" color="#4A55A2" style={{ flex: 1 }} />
   ) : (
     <NavigationContainer>
-      <Stack.Navigator
-        screenOptions={{
-          headerShown: false,
-        }}
-      >
+      <Stack.Navigator>
         {isAuthenticated ? (
           <Stack.Group>
             <Stack.Screen name="HomeScreen" component={HomeScreen} />
+            <Stack.Screen
+              name="FriendsRequestScreen"
+              component={FriendsRequestScreen}
+              options={{ headerTitle: "Friends Request" }}
+            />
           </Stack.Group>
         ) : (
           <Stack.Group>
-            <Stack.Screen name="LoginScreen" component={LoginScreen} />
-            <Stack.Screen name="RegisterScreen" component={RegisterScreen} />
+            <Stack.Screen
+              name="LoginScreen"
+              component={LoginScreen}
+              options={{
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
+              name="RegisterScreen"
+              component={RegisterScreen}
+              options={{
+                headerShown: false,
+              }}
+            />
           </Stack.Group>
         )}
       </Stack.Navigator>

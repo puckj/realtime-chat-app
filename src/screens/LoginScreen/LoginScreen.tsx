@@ -5,6 +5,7 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
+  Platform,
 } from "react-native";
 import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -15,6 +16,8 @@ import axios from "axios";
 import { API_URL } from "@env";
 import { useAppDispatch } from "../../store/hooks";
 import { setUser } from "../../store/features/user/userSlice";
+
+const apiUrl = Platform.OS === "android" ? "http://10.0.2.2:8080" : API_URL;
 
 const LoginScreen = () => {
   const [email, setEmail] = useState("admin@gmail.com");
@@ -28,17 +31,18 @@ const LoginScreen = () => {
       email,
       password: await Encryption(password),
     };
+
     axios
-      .post(API_URL + "/login", user)
+      .post(apiUrl + "/login", user)
       .then((res) => {
         const token = res.data.token;
         console.log(token);
-        
+
         //ทำต่อตรงนี้ ใช้ redux toolkit + AsyncStorage
-        dispatch(setUser({authToken:token}))
+        dispatch(setUser({ authToken: token }));
       })
       .catch((err) => {
-        console.error(err.response);
+        console.error(err, "Login() error");
         Alert.alert("Login Error", "Invalid email or password");
       });
   };

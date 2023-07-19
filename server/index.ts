@@ -4,16 +4,15 @@ const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
-
+const jwt = require("jsonwebtoken");
 const app = express();
-const port = process.env.LISTENING_PORT;
 const cors = require("cors");
-app.use(cors());
+const port = process.env.LISTENING_PORT;
 
+app.use(cors());
 app.use(bodyParser.urlencoded({ extends: false }));
 app.use(bodyParser.json());
 app.use(passport.initialize());
-const jwt = require("jsonwebtoken");
 
 mongoose
   .connect(
@@ -24,7 +23,7 @@ mongoose
     }
   )
   .then((res: any) => {
-    console.log("Connected to MongoDB ", res);
+    console.log("Connected to MongoDB ");
   })
   .catch((err: any) => {
     console.log("Error connecting to MongoDB ", err);
@@ -130,24 +129,24 @@ app.post("/friend-request", async (req: any, res: any) => {
   }
 });
 
-// //endpoint to show all the friend-requests of a particular user
-// app.get("/friend-request/:userId", async (req: any, res: any) => {
-//   try {
-//     const { userId } = req.params;
+//endpoint to show all the friend-requests of a particular user
+app.get("/friend-request/:userId", async (req: any, res: any) => {
+  try {
+    const { userId } = req.params;
 
-//     //fetch the user document based on the userId
-//     const user = await User.findById(userId)
-//       .populate("friendRequests", "name email image")
-//       .lean();
+    //fetch the user document based on the userId
+    const user = await User.findById(userId)
+      .populate("friendRequests", "name email image")
+      .lean();
 
-//     const friendRequests = user.friendRequests;
+    const friendRequests = user.friendRequests;
 
-//     res.status(200).json(friendRequests);
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ message: "Internal Server Error" });
-//   }
-// });
+    res.status(200).json(friendRequests);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
 
 //endpoint สำหรับ get รายชื่อ friendRequests ของ user นั้นขอเพิ่มเพื่อนไป (ยังไม่ได้ตอบรับเป็นเพื่อน)
 app.get("/friend-requests/sent/:userId", async (req: any, res: any) => {
@@ -184,5 +183,35 @@ app.get("/friends/:userId", (req: any, res: any) => {
   } catch (error) {
     console.log("error", error);
     res.status(500).json({ message: "internal server error" });
+  }
+});
+
+//endpoint to accept a friend-request of a particular person
+app.post("/friend-request/accept", async (req: any, res: any) => {
+  try {
+    const { senderId, recepientId } = req.body;
+
+    //retrieve the documents of sender and the recipient
+    const sender = await User.findById(senderId);
+    const recepient = await User.findById(recepientId);
+
+    sender.friends.push(recepientId);
+    recepient.friends.push(senderId);
+
+    recepient.friendRequests = recepient.friendRequests.filter(
+      (request: any) => request.toString() !== senderId.toString()
+    );
+
+    sender.sentFriendRequests = sender.sentFriendRequests.filter(
+      (request: any) => request.toString() !== recepientId.toString()
+    );
+
+    await sender.save();
+    await recepient.save();
+
+    res.status(200).json({ message: "Friend Request accepted successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 });

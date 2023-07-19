@@ -1,9 +1,11 @@
-import { View, Text, Image, TouchableOpacity } from "react-native";
+import { View, Text, Image, TouchableOpacity, Platform } from "react-native";
 import React, { useEffect, useState } from "react";
 import { useAppSelector } from "../../store/hooks";
 import { selectUserId } from "../../store/features/user/userSlice";
 import axios from "axios";
 import { API_URL } from "@env";
+
+const apiUrl = Platform.OS === "android" ? "http://10.0.2.2:8080" : API_URL;
 
 const UserItem = ({ item, friendRequestsList, friendList }) => {
   const userId = useAppSelector(selectUserId);
@@ -22,7 +24,7 @@ const UserItem = ({ item, friendRequestsList, friendList }) => {
       selectedUserId: item._id,
     };
     axios
-      .post(API_URL + "/friend-request", body)
+      .post(apiUrl + "/friend-request", body)
       .then((res) => {
         console.log(res.data, "/friend-request");
         if (res.data === "OK") {

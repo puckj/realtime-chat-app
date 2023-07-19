@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, Platform } from "react-native";
 import React, { useEffect, useLayoutEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { clearUser, selectUserId } from "../../store/features/user/userSlice";
@@ -8,6 +8,8 @@ import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 import { API_URL } from "@env";
 import UserItem from "../../components/UserItem/UserItem";
+
+const apiUrl = Platform.OS === "android" ? "http://10.0.2.2:8080" : API_URL;
 
 const HomeScreen = () => {
   const dispatch = useAppDispatch();
@@ -26,7 +28,7 @@ const HomeScreen = () => {
 
   const fetchUsers = async () => {
     axios
-      .get(`${API_URL}/users/${userId}`)
+      .get(`${apiUrl}/users/${userId}`)
       .then((res) => {
         // console.log(res.data);
         setUsers(res.data);
@@ -37,7 +39,7 @@ const HomeScreen = () => {
   };
   const fetchFriendRequestList = async () => {
     axios
-      .get(`${API_URL}/friend-requests/sent/${userId}`)
+      .get(`${apiUrl}/friend-requests/sent/${userId}`)
       .then((res) => {
         // console.log(res.data, "/friend-requests/sent/");
         setFriendRequestList(res.data);
@@ -46,7 +48,7 @@ const HomeScreen = () => {
   };
   const fetchFriendsList = async () => {
     axios
-      .get(`${API_URL}/friends/${userId}`)
+      .get(`${apiUrl}/friends/${userId}`)
       .then((res) => {
         // console.log(res.data, "/friends/");
         setFriendList(res.data);
@@ -56,7 +58,6 @@ const HomeScreen = () => {
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      headerShown: true,
       headerTitle: "",
       headerLeft: () => (
         <Text style={{ fontSize: 16, fontWeight: "bold" }}>Chat</Text>
@@ -64,7 +65,9 @@ const HomeScreen = () => {
       headerRight: () => (
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
           <Ionicons name="chatbox-ellipses-outline" size={24} color="black" />
-          <Ionicons name="people-outline" size={24} color="black" />
+          <TouchableOpacity onPress={()=> navigation.navigate('FriendsRequestScreen')}>
+            <Ionicons name="people-outline" size={24} color="black" />
+          </TouchableOpacity>
         </View>
       ),
     });

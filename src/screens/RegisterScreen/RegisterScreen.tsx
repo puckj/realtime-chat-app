@@ -5,6 +5,7 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
+  Platform,
 } from "react-native";
 import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -13,6 +14,8 @@ import { RootStackNavigationProp } from "../../navigation/types";
 import axios from "axios";
 import { API_URL } from "@env";
 import { Encryption } from "../../helpers/encryption";
+
+const apiUrl = Platform.OS === "android" ? "http://10.0.2.2:8080" : API_URL;
 
 const RegisterScreen = () => {
   const [email, setEmail] = useState("");
@@ -31,7 +34,7 @@ const RegisterScreen = () => {
 
     //send a POST request to the backend API (register)
     axios
-      .post(API_URL + "/register", user)
+      .post(apiUrl + "/register", user)
       .then((res) => {
         // console.log(res);
         Alert.alert(
