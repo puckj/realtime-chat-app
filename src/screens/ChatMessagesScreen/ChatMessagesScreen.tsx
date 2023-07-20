@@ -9,7 +9,7 @@ import {
   Image,
   Pressable,
 } from "react-native";
-import React, { useEffect, useLayoutEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import {
   ChatMessagesScreenRouteProp,
@@ -40,12 +40,25 @@ const ChatMessagesScreen = () => {
   const [messages, setMessages] = useState([]);
   const [selectedMessages, setSelectedMessages] = useState<any>([]);
 
+  const scrollViewRef = useRef<any>(null);
+
   useEffect(() => {
     // console.log(userId, "userId");
     // console.log(params.recepientId, "recepientId");
     fetchRecepientDetail();
     fetchMessages();
+    scrollToBottom();
   }, []);
+
+  const scrollToBottom = () => {
+    if (scrollViewRef.current) {
+      scrollViewRef.current.scrollToEnd({ animated: false });
+    }
+  };
+
+  const handleContentSizeChange = () => {
+    scrollToBottom();
+  };
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -86,9 +99,6 @@ const ChatMessagesScreen = () => {
       headerRight: () =>
         selectedMessages.length > 0 && (
           <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-            <Ionicons name="md-arrow-undo-sharp" size={24} color="black" />
-            <Ionicons name="md-arrow-redo-sharp" size={24} color="black" />
-            <Ionicons name="star" size={24} color="black" />
             <TouchableOpacity onPress={deleteMessagesHandle}>
               <MaterialIcons name="delete" size={24} color="black" />
             </TouchableOpacity>
@@ -142,7 +152,11 @@ const ChatMessagesScreen = () => {
         formData.append("messageType", "text");
         formData.append("messageText", message);
       }
-      const response = await axios.post(apiUrl + "/messages", formData);
+      const response = await axios.post(apiUrl + "/messages", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       console.log(response, " send messageResponse");
 
       if (response.status === 200) {
@@ -186,21 +200,25 @@ const ChatMessagesScreen = () => {
       const response = await axios.post(apiUrl + "/deleteMessages", {
         messages: selectedMessages,
       });
-      console.log(response);
+      // console.log(response);
       if (response.status === 200) {
         setSelectedMessages([]);
-        fetchMessages()
-      }else{
-        console.error('error deleting messages', response.status)
+        fetchMessages();
+      } else {
+        console.error("error deleting messages", response.status);
       }
     } catch (error) {
       console.error("error deleting messages", error);
     }
   };
-  // console.log("selectedMessages :", selectedMessages);
+
   return (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: "#f0f0f0" }}>
-      <ScrollView>
+      <ScrollView
+        ref={scrollViewRef}
+        contentContainerStyle={{ flexGrow: 1 }}
+        onContentSizeChange={handleContentSizeChange}
+      >
         {messages.map((item: any, index) => {
           if (item.messageType === "text") {
             const isSelected = selectedMessages.includes(item._id);
@@ -344,7 +362,6 @@ const ChatMessagesScreen = () => {
           <TouchableOpacity onPress={pickImageHandle}>
             <Entypo name="camera" size={24} color="gray" />
           </TouchableOpacity>
-          <Feather name="mic" size={23} color="gray" />
         </View>
 
         <TouchableOpacity
