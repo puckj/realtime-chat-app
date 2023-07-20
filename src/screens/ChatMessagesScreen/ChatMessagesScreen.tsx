@@ -18,6 +18,7 @@ import {
 import { Entypo } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
 import EmojiSelector from "react-native-emoji-selector";
 import { selectUserId } from "../../store/features/user/userSlice";
 import { useAppSelector } from "../../store/hooks";
@@ -37,7 +38,7 @@ const ChatMessagesScreen = () => {
   const [showEmojiSelector, setShowEmojiSelector] = useState(false);
   const [selectedImage, setSelectedImage] = useState("");
   const [messages, setMessages] = useState([]);
-  const [selectedMessages, setSelectedMessages] = useState([]);
+  const [selectedMessages, setSelectedMessages] = useState<any>([]);
 
   useEffect(() => {
     // console.log(userId, "userId");
@@ -54,26 +55,47 @@ const ChatMessagesScreen = () => {
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Ionicons name="arrow-back" size={24} color="black" />
           </TouchableOpacity>
-          {recepientData && (
-            <>
-              <Image
-                style={{
-                  width: 30,
-                  height: 30,
-                  borderRadius: 15,
-                  resizeMode: "cover",
-                }}
-                source={{ uri: recepientData.image }}
-              />
-              <Text style={{ marginLeft: 5, fontSize: 15, fontWeight: "bold" }}>
-                {recepientData.name}
-              </Text>
-            </>
-          )}
+          {recepientData ? (
+            selectedMessages.length > 0 ? (
+              <View>
+                <Text style={{ fontSize: 16, fontWeight: "500" }}>
+                  {selectedMessages.length}
+                </Text>
+              </View>
+            ) : (
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Image
+                  style={{
+                    width: 30,
+                    height: 30,
+                    borderRadius: 15,
+                    resizeMode: "cover",
+                  }}
+                  source={{ uri: recepientData.image }}
+                />
+                <Text
+                  style={{ marginLeft: 5, fontSize: 15, fontWeight: "bold" }}
+                >
+                  {recepientData.name}
+                </Text>
+              </View>
+            )
+          ) : null}
         </View>
       ),
+      headerRight: () =>
+        selectedMessages.length > 0 && (
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+            <Ionicons name="md-arrow-undo-sharp" size={24} color="black" />
+            <Ionicons name="md-arrow-redo-sharp" size={24} color="black" />
+            <Ionicons name="star" size={24} color="black" />
+            <TouchableOpacity onPress={deleteMessagesHandle}>
+              <MaterialIcons name="delete" size={24} color="black" />
+            </TouchableOpacity>
+          </View>
+        ),
     });
-  }, [recepientData]);
+  }, [recepientData, selectedMessages]);
 
   const fetchRecepientDetail = async () => {
     try {
@@ -146,13 +168,45 @@ const ChatMessagesScreen = () => {
     }
   };
 
+  const selectMessageHandle = async (message: any) => {
+    // console.log(message);
+    const isSelected = selectedMessages.includes(message._id);
+    if (isSelected) {
+      setSelectedMessages((prevMessages) =>
+        prevMessages.filter((id) => id !== message._id)
+      );
+    } else {
+      setSelectedMessages((prevMessage) => [...prevMessage, message._id]);
+    }
+  };
+
+  const deleteMessagesHandle = async () => {
+    console.log(selectedMessages);
+    try {
+      const response = await axios.post(apiUrl + "/deleteMessages", {
+        messages: selectedMessages,
+      });
+      console.log(response);
+      if (response.status === 200) {
+        setSelectedMessages([]);
+        fetchMessages()
+      }else{
+        console.error('error deleting messages', response.status)
+      }
+    } catch (error) {
+      console.error("error deleting messages", error);
+    }
+  };
+  // console.log("selectedMessages :", selectedMessages);
   return (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: "#f0f0f0" }}>
       <ScrollView>
         {messages.map((item: any, index) => {
           if (item.messageType === "text") {
+            const isSelected = selectedMessages.includes(item._id);
             return (
               <Pressable
+                onLongPress={() => selectMessageHandle(item)}
                 key={index}
                 style={[
                   item.senderId._id === userId
@@ -172,9 +226,15 @@ const ChatMessagesScreen = () => {
                         borderRadius: 7,
                         margin: 10,
                       },
+                  isSelected && { width: "100%", backgroundColor: "#f0ffff" },
                 ]}
               >
-                <Text style={{ fontSize: 14, textAlign: "left" }}>
+                <Text
+                  style={{
+                    fontSize: 14,
+                    textAlign: isSelected ? "right" : "left",
+                  }}
+                >
                   {item.message}
                 </Text>
                 <Text
