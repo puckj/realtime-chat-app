@@ -290,7 +290,7 @@ app.get("/user/:userId", async (req: any, res: any) => {
 //endpoint to fetch the messages between two users in the chatRoom
 app.get("/messages/:senderId/:recepientId", async (req: any, res: any) => {
   try {
-    const { senderId, recepientId } = req.params;    
+    const { senderId, recepientId } = req.params;
     const messages = await Message.find({
       $or: [
         { senderId: senderId, recepientId: recepientId },
@@ -301,5 +301,20 @@ app.get("/messages/:senderId/:recepientId", async (req: any, res: any) => {
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+//endpoint to delete the messages
+app.post("/deleteMessages", async (req: any, res: any) => {
+  try {
+    const { messages } = req.body;
+    if (!Array.isArray(messages) || messages.length === 0) {
+      return res.status(400).json({ message: "invalid req body!" });
+    }
+    await Message.deleteMany({ _id: { $in: messages } });
+    res.json({ message: "Message deleted successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Internal Server" });
   }
 });

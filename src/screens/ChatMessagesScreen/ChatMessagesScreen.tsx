@@ -22,7 +22,9 @@ import EmojiSelector from "react-native-emoji-selector";
 import { selectUserId } from "../../store/features/user/userSlice";
 import { useAppSelector } from "../../store/hooks";
 import axios from "axios";
-import { API_URL } from "@env";
+import { API_URL, SERVER_FILE_PATH } from "@env";
+import { formatTime } from "../../helpers/formatTime";
+import * as ImagePicker from "expo-image-picker";
 
 const apiUrl = Platform.OS === "android" ? "http://10.0.2.2:8080" : API_URL;
 
@@ -35,11 +37,11 @@ const ChatMessagesScreen = () => {
   const [showEmojiSelector, setShowEmojiSelector] = useState(false);
   const [selectedImage, setSelectedImage] = useState("");
   const [messages, setMessages] = useState([]);
+  const [selectedMessages, setSelectedMessages] = useState([]);
 
   useEffect(() => {
-    console.log(userId, "userId");
-    console.log(params.recepientId, "recepientId");
-
+    // console.log(userId, "userId");
+    // console.log(params.recepientId, "recepientId");
     fetchRecepientDetail();
     fetchMessages();
   }, []);
@@ -92,7 +94,7 @@ const ChatMessagesScreen = () => {
         `${apiUrl}/messages/${userId}/${params.recepientId}`
       );
       if (response.status === 200) {
-        console.log(response.data);
+        // console.log(response.data);
         setMessages(response.data);
       }
     } catch (error) {
@@ -124,16 +126,24 @@ const ChatMessagesScreen = () => {
       if (response.status === 200) {
         setMessage("");
         setSelectedImage("");
-        fetchMessages()
+        fetchMessages();
       }
     } catch (error) {
       console.log("error in sending the message", error);
     }
   };
 
-  const formatTime = (time) => {
-    const options = { hour: "numeric", minute: "numeric" };
-    return new Date(time).toLocaleString("en-US", options);
+  const pickImageHandle = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+    console.log(result);
+    if (!result.canceled) {
+      sendMessageHandle("image", result.assets[0].uri);
+    }
   };
 
   return (
@@ -180,6 +190,57 @@ const ChatMessagesScreen = () => {
               </Pressable>
             );
           }
+          if (item.messageType === "image") {
+            const baseUrl = SERVER_FILE_PATH;
+            const imageUrl = item.imageUrl;
+            const fileName = imageUrl.split("/").pop();
+            const source = { uri: baseUrl + "/files/" + fileName };
+            // console.log(source);
+            return (
+              <Pressable
+                key={index}
+                style={[
+                  item.senderId._id === userId
+                    ? {
+                        alignSelf: "flex-end",
+                        backgroundColor: "#dcf8c6",
+                        padding: 8,
+                        maxWidth: "60%",
+                        borderRadius: 7,
+                        margin: 10,
+                      }
+                    : {
+                        alignSelf: "flex-start",
+                        backgroundColor: "white",
+                        padding: 8,
+                        maxWidth: "60%",
+                        borderRadius: 7,
+                        margin: 10,
+                      },
+                ]}
+              >
+                <View>
+                  <Image
+                    style={{ width: 200, height: 200, borderRadius: 7 }}
+                    source={source}
+                  />
+                  <Text
+                    style={{
+                      textAlign: "right",
+                      fontSize: 9,
+                      position: "absolute",
+                      color: "white",
+                      marginTop: 5,
+                      right: 10,
+                      bottom: 7,
+                    }}
+                  >
+                    {formatTime(item.timeStamp)}
+                  </Text>
+                </View>
+              </Pressable>
+            );
+          }
         })}
       </ScrollView>
       <View
@@ -220,7 +281,9 @@ const ChatMessagesScreen = () => {
             marginHorizontal: 8,
           }}
         >
-          <Entypo name="camera" size={24} color="gray" />
+          <TouchableOpacity onPress={pickImageHandle}>
+            <Entypo name="camera" size={24} color="gray" />
+          </TouchableOpacity>
           <Feather name="mic" size={23} color="gray" />
         </View>
 
