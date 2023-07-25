@@ -1,5 +1,5 @@
-# realtime-chat-app
-<MERN STACK />
+# chat-app (MERN STACK)
+
 - ReactNative (Expo)
 - Express (NodeJS)
 - MongoDB ATLAS
